@@ -16,7 +16,7 @@ def toPng(path):
     Gb.parse_file(path)
     Gb.convert_units('mm')
     # Gb.scale(1000/54)
-    Gb.scale(10)
+    Gb.scale(854/98.637)
 
     import numpy as np
     from PIL import Image, ImageDraw
@@ -40,8 +40,12 @@ def toPng(path):
     picx = int(math.ceil(picx))
     picy = int(math.ceil(picy))
     print('image size:',picx,picy)
-    img = Image.new('RGB',(picx,picy))
+    offsetx = int((854 - picx)/2)
+    offsety = int((480 - picy)/2)
+    img = Image.new('RGB',(854, 480))
     draw = ImageDraw.Draw(img)
+    points = [0,0,854,0,854,480,0,480,0,0]
+    draw.polygon(points, fill=(0, 0, 0))
     for poly in Gb.solid_geometry:
         try:
             # poly = descartes.patch.PolygonPatch(pyg)
@@ -49,8 +53,8 @@ def toPng(path):
             # print (zip(x,y))
             points = []
             for index in range(len(x)):
-                points.append(x[index])
-                points.append(y[index])
+                points.append(x[index] + offsetx)
+                points.append(y[index] + offsety)
             # print(points)
             draw.polygon(points, fill=(255,255,255))
             # drawInner(draw, poly, 1)
@@ -59,8 +63,8 @@ def toPng(path):
                 x, y = ints.coords.xy
                 points = []
                 for index in range(len(x)):
-                    points.append(x[index])
-                    points.append(y[index])
+                    points.append(x[index] + offsetx)
+                    points.append(y[index] + offsety)
                 # print(points)
                 draw.polygon(points, fill=(255, 255, 255))
                 # draw.polygon(list(zip(*ints.coords.xy)), fill=(0, 0, 0))
@@ -70,18 +74,23 @@ def toPng(path):
     img = img.transpose(Image.FLIP_TOP_BOTTOM)
     img.save(path.replace('.','_') + '_top.png')
     # img.show()
+    # img = img.convert('L')  # convert image to monochrome - this works
+    img = img.convert('1')  # convert image to black and white
+    # img = img.convert('1;R')
+    # img = img.convert('1')
+    img.save(path.replace('.','_') + '_top1.png')
     layer = Layer(1)
-    layer.set_image(img.convert('1'))
+    layer.set_image(img)
     wowfile = WowFile()
     wowfile.layers.append(layer)
-    wowfile.Height = layer.height
-    wowfile.Width = layer.width
-    wowfile.write_wow('D:/user/weiyc/document/altiumProject/洗衣机水位检测/waterCheck/Project Outputs for waterCheck/print.wow')
-    mapp = QtGui.QApplication(sys.argv)
-    mw = showpng.ImageFrame(path.replace('.','_') + '_top.png')
-    mw.show()
-    sys.exit(mapp.exec_())
+    wowfile.Height = 854
+    wowfile.Width = 480
+    wowfile.write_wow('print.wow')
+    # mapp = QtGui.QApplication(sys.argv)
+    # mw = showpng.ImageFrame(path.replace('.','_') + '_top1.png')
+    # mw.show()
+    # sys.exit(mapp.exec_())
     # showpng.ImageFrame()
 
 if __name__=="__main__":
-    toPng('D:/user/weiyc/document/altiumProject/洗衣机水位检测/waterCheck/Project Outputs for waterCheck/PCB1.GTL')
+    toPng('gerber/PCB1.GTL')

@@ -26,9 +26,9 @@ class Layer:
         # self.height = size[1]
         # self.image = Image.frombytes("1", size, data, "raw", "1;R")
         self.image = pngImg
-        self.width = self.image.size[0]
-        self.height = self.image.size[1]
-        self.image = self.image.rotate(-90, expand=True)
+        self.width = self.image.size[1]
+        self.height = self.image.size[0]
+        self.image = self.image.rotate(90, expand=True)
         self.data = self.image.tobytes("raw", "1;R")
         # TODO: Run that in the background
         # self.illuminated_pixel = sum(_b2ba[int(b)] for b in data)
@@ -168,3 +168,15 @@ class WowFile:
 
             # Write ending
             f.write(self._Ending.encode("ascii"))
+            
+if __name__ == '__main__':
+    path = 'D:/user/weiyc/document/python/WoWTools/test.png'
+    img = Image.open(path)
+    # img = img.convert('1')
+    layer = Layer(1)
+    layer.set_image(img)
+    wowfile = WowFile()
+    wowfile.layers.append(layer)
+    wowfile.Height = layer.height
+    wowfile.Width = layer.width
+    wowfile.write_wow('D:/user/weiyc/document/python/WoWTools/test.wow')
